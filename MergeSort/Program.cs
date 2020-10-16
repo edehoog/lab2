@@ -56,10 +56,9 @@ namespace MergeSort
             /*********************** Methods **********************
              *****************************************************/
             /*
-            implement Merge method. This method takes two sorted array and
+            This method takes two sorted array and
             and constructs a sorted array in the size of combined arrays
             */
-
             static int[] Merge(int[] LA, int[] RA, int[] A)
             {
                 int lengthLA = LA.Length;
@@ -99,10 +98,10 @@ namespace MergeSort
                 return A;
             }
             /*
-            implement MergeSort method: takes an integer array by reference
+            Takes an integer array by reference
             and makes some recursive calls to intself and then sorts the array
+            for single threads
             */
-            // For single threads
             static int[] MergeSort(int[] A)
             {
                 int lengthA = A.Length;
@@ -127,7 +126,11 @@ namespace MergeSort
 
                 return A;
             }
-            // MergeSort method for multithreading, the threads are created in this method
+            /*
+            Takes an integer array by reference
+            splits the array into sub arrays and sorts the arrays
+            with multi-threading
+            */
             static int[] MergeSortMulti(int[] A)
             {
                 int numberOfThreads = 12;
@@ -191,13 +194,12 @@ namespace MergeSort
                     thread.Join();
                 }
 
-                int[][] jaggedArray2 = new int[numberOfThreads][];
                 int length = portion * 2;
 
                 for (int j = 0; j < numberOfThreads - 1; j++)
                 {
                     int[] test = new int[length];
-                    jaggedArray2[j] = Merge(holderArray[j], holderArray[j + 1], test);
+                    holderArray[j] = Merge(holderArray[j], holderArray[j + 1], test);
                     length = length + portion;
                 }
 
