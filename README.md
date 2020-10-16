@@ -1,160 +1,58 @@
----
-layout: lab
-title:  Lab 2 - Multi-Threading
-date:   2020-10-30 12:00:00
-authors: [C. Antonio Sánchez, Ali Mousavifar]
-categories: [labs, threads, multithread, Mergesort]
-usemath: true
+Name: Elija de Hoog
+Student Number: 37121209
 
----
+Part 1:
+1.
+These timings were made with 12 threads and averaged over 5 runs
+Array size      Time (Multi-Threaded)       Time (Single)
+10^1            223                         0
+10^2            222                         0
+10^3            225                         0
+10^4            256                         7
+10^5            287                         75
+10^6            473                         609
+10^7            2016                        4367
 
-# Lab 2 -- Multi-Threading
-{:.no_toc}
+2. 
+Based on the number of cores on my computer (6) I expected a speed up of 6x when implementing multi-threading in the program.
 
-In this lab, we will get some practice with creating threads and applying concurrency effectively in C\#.  
+3.
+This speed up was not achieved in my programs. I beleive that the overhead time and memory required to set up the threads by kernel contribute to an overall slower execution than expected. Also there could be implementation errors in my code or inefficiencies I overlooked.
 
-To help get you started, some of the code is posted on GitHub [here (https://github.com/alimousavifar/lab2_public/)](https://github.com/alimousavifar/lab2_public/).
+4.
+Number of Threads       Sp
+1                       0.903
+2                       1.314
+3                       1.347
+4                       1.757
+5                       1.626
+6                       2.132
+7                       1.710
+8                       2.003
+9                       1.656
+10                      1.942
+11                      1.570
+12                      1.760
+24                      0.970
+100                     0.374
 
-Feel free to discuss approaches and solutions with your classmates, but labs are to be completed individually. Each student is expected to be able to answer questions about the content, describe their work, and reproduce their code (or parts thereof).
+My laptop has 6 cores, the Sp fluctuates do to the variations in run times each run. For more accurate speed factors I would need to average more runs.
 
-{% include toc.html %}
+Part 2:
+These timings were made with 12 threads and averaged over 5 runs
+Array size      Time (Multi-Threaded)       Time (Single)       Sp
+10^3            88                          20                  0.227
+10^4            89                          22                  0.247
+10^5            120                         36                  0.300
+10^6            275                         145                 0.527
+10^7            580                         1271                2.191
+10^8            2994                        12813               3.936
 
-## Part 1: MergeSort
+1.
+Splitting up work between threads is only useful for specific situations. This is depedning n the amount of elements involved in the process you want to split into threads. For a small job the increase in overhead and memory used by the kernel will result in a slower exucution time when compared with main thread operation.
 
-The MergeSort algorithm is one of the most efficient single-threaded sorting algorithms out there, with an expected computational complexity of $$O(n\log n)$$.  We will try to speed this algorithm up slightly by introducing concurrency.
+2.
+The implications that result from concurent code consist of ensureing that the job size is large enough to make it beneficial. Also you need to ensure critical sections of the code are protected when implementing concurency. If these critical sections are not protected it can lead to very large problems in the program.
 
-Download the template provided on [GitHub](https://github.com/alimousavifar/lab2_public/).  We will create two versions of the MergeSort algorithm for sorting a set of random integers:
-- `MergeSort Single Thread`: regular single-threaded version
-- `MergeSort Multiple Threads`: a version which can break the initial array into multiple sub-arrays and sort them in separate threads and then sort the sub-arrays
-
-We will then measure the computation time of both, and compute the *speed-up factor* to see how much we have gained.
-
-The basic layout of your code should look as follows:
-```
-static void Main(string[] args)
-{
-
-    ARRAY_SIZE = 1000;
-    int[] arraySingleThread = new int[ARRAY_SIZE];
-
-
-
-
-    // TODO : Use the "Random" class in a for loop to initialize an array
-
-    // copy array by value.. You can also use array.copy()
-    int[] arrayMultiThread = arraySingleThread.Slice(0,arraySingleThread.Length);
-
-    /*TODO : Use the  "Stopwatch" class to measure the duration of time that
-       it takes to sort an array using one-thread merge sort and
-       multi-thead merge sort
-    */
-
-
-    //TODO :start the stopwatch
-    MergeSort(arraySingleThread);
-    //TODO :Stop the stopwatch
-
-
-
-    //TODO: Multi Threading Merge Sort
-
-
-
-
-
-
-
-     /*********************** Methods **********************
-      *****************************************************/
-     /*
-     implement Merge method. This method takes two sorted array and
-     and constructs a sorted array in the size of combined arrays
-     */
-
-    static int[] Merge(int[] LA, int[] RA, int[] A)
-    {
-
-        // TODO :implement
-
-    }
-
-
-     /*
-     implement MergeSort method: takes an integer array by reference
-     and makes some recursive calls to intself and then sorts the array
-     */
-    static int[] MergeSort(int[] A)
-    {
-
-      // TODO :implement
-
-
-    }
-
-
-    // a helper function to print your array
-    static void PrintArray(int[] myArray)
-    {
-        Console.Write("[");
-        for (int i = 0; i < myArray.Length; i++)
-        {
-            Console.Write("{0} ", myArray[i]);
-
-        }
-        Console.Write("]");
-        Console.WriteLine();
-
-    }
-
-    // a helper function to confirm your array is sorted
-    // returns boolean True if the array is sorted
-    static bool IsSorted(int[] a)
-    {
-        int j = a.Length - 1;
-        if (j < 1) return true;
-        int ai = a[0], i = 1;
-        while (i <= j && ai <= (ai = a[i])) i++;
-        return i > j;
-    }
-
-
-}
-
-```
-In the above implementation we have used arrays. Note you can use lists or vectors if you prefer. Like many other Programming languages, arrays are passed by refrenece and therefore, any changes that a method makes to an array will change the array after outside of the scope of the function. If you need a reminder of the implementation details of the Merge Sort algorithm, feel free to have a look at the page on [Wikipedia](https://en.wikipedia.org/wiki/Merge_sort). Additionally there is a very informative video by mycodeschool channel on [YouTube](https://www.youtube.com/watch?v=TzeBrDU-JaY)
-
-
-### Use the helper functions to print and to test your algorithm
-If the helpers functions are not provided to you, please create helper functions to do the following:
-- Write a method to check that the outputs of both of your implementations are indeed sorted.  It's good to get into the habit of writing tests as you go along.
-- Write a method to print arrays outputs of both of your implementations.
-
-If they are provided to you, you may modify or enhance them for your use.
-
-### Measuring computation time
-
-To measure computation time, we will use the `Stopwatch` class from `System.Diagnostics` namespace.  The `Stopwatch` class contains a set of functions for measuring times in different units, and for computing and converting durations.  See the [documentation for durations](https://docs.microsoft.com/en-us/dotnet/api/system.diagnostics.stopwatch?view=netcore-3.1) for more details.  And that's it!  With these few lines of code, and a duration cast to a desired time resolution, you should be able to measure computation times in mili-seconds.
-
-### Speed-up Factor
-
-Recall that the speed-up factor is computed by
-
-$$S_p = T_1/T_p$$
-
-where $$p$$ is the number of processors or cores, and $$T_p$$ is the time taken for the code to run on $$p$$ processors.
-
-### Multi Threading Merge Sort:
-- Start by first manually subdividing the unsorted array into subarrays and sort them separately in a dedicated thread. And then merge them together. And test your algorithm.
-- Then use a method which can subdividing unsorted array into multiple sub-arrays based on a variable integer (number of threads), e.g. if the thread# is 10 and the array size is 100, the process can create 10 similar size arrays and sort them in their own dedicated threads.
-- Note that threads can take input arguments (Page 23 Lecture 3 via Lambda functions or Start() methods or [MS Docs](https://docs.microsoft.com/en-us/dotnet/standard/threading/creating-threads-and-passing-data-at-start-time))  
-- Note that you can pass the unsorted array (as an argument of a method) into a thread, and sort it in the thread. Once the thread is done, the array in the main thread is sorted because arrays are passed into function by reference.
-- Note that you must synchronize all the threads to join before you start merging the sorted sub-array from each thread
-
-
-### Questions
-
-1. In a table summarize the duration of time for your single thread and multi-thread merge sort algorithms for the following unsorted array sizes of {10, 10^2, 10^3, 10^4, 10^5, 10^6, 10^7}
-2. How much speed-up were you expecting based on the number of processors/cores on your machine?
-3. Did you achieve the speed-up you expected?  If not, what do you think might be interfering with this?
-4. In your parallel implementation, how many threads were created (approximately) when sorting one million elements? Is there a way to reduce the number of new threads by about half without sacrificing parallelism?
+3.
+Considering that in my testing I found using a sample size of 10^8 resulted in accuracy to 3 decimal places I would guess that a sample size on the order of 10^19 would be required to estimate pi to 7 decimal places. A problem with such a large sample size is CPU processing capabilities as well as RAM capabilities on laptops and home PC's. The accuracy of the Monte Carlo Simulation in estimating pi is depedent on the sample size. The more sample points that are passed to the simulation the more accurate the estimations made by the simulation will be. Another thing to consider would be the actual randomess of the random number generator used, this could be a limitation to the simulation when considering high accuracy estimations as more accurate estimations would require completely unbiased random sample points.
