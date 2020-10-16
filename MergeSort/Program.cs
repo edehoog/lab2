@@ -1,6 +1,10 @@
 ﻿using System;
-using System.Linq;
 using System.Diagnostics;
+using System.Collections.Generic;
+using System.Threading;
+using System.Linq.Expressions;
+using System.Collections.Immutable;
+using System.Globalization;
 
 namespace MergeSort
 {
@@ -8,14 +12,12 @@ namespace MergeSort
     {
         static void Main(string[] args)
         {
-
-            int ARRAY_SIZE = 1000;
+            int ARRAY_SIZE = Convert.ToInt32(Math.Pow(10,6));
             int[] arraySingleThread = new int[ARRAY_SIZE];
             int[] arrayMultiThread = new int[ARRAY_SIZE];
-
             var randomNumber = new Random();
 
-            for(var i = 0; i<ARRAY_SIZE; i++)
+            for(var i = 0; i < ARRAY_SIZE; i++)
             {
                 arraySingleThread[i] = randomNumber.Next(0, 1000);
             }
@@ -24,25 +26,32 @@ namespace MergeSort
 
             Stopwatch stopwatch = new Stopwatch();
 
+            Console.WriteLine("Multi-threaded:");
+
             stopwatch.Start();
-
-            arraySingleThread = MergeSort(arraySingleThread);
-
-            bool sorted = IsSorted(arraySingleThread);
-
+            arrayMultiThread = MergeSortMulti(arrayMultiThread);
             stopwatch.Stop();
 
             long duration = stopwatch.ElapsedMilliseconds;
-
-            string formatedTime = String.Format("Miliseconds:{0}", duration);
-
+            string formatedTime = String.Format("Miliseconds: {0}", duration);
             Console.WriteLine("Runtime: " + formatedTime);
 
-            Console.WriteLine(sorted);
+            bool sorted = IsSorted(arrayMultiThread);
+            Console.WriteLine("The array is sorted: " + sorted);
 
-            PrintArray(arraySingleThread);
+            Console.WriteLine("Single-threaded:");
 
-            //TODO: Multi Threading Merge Sort
+            stopwatch.Reset();
+            stopwatch.Start();
+            arraySingleThread = MergeSort(arraySingleThread);
+            stopwatch.Stop();
+
+            duration = stopwatch.ElapsedMilliseconds;
+            formatedTime = String.Format("Miliseconds: {0}", duration);
+            Console.WriteLine("Runtime: " + formatedTime);
+
+            sorted = IsSorted(arraySingleThread);
+            Console.WriteLine("The array is sorted: " + sorted);
 
             /*********************** Methods **********************
              *****************************************************/
@@ -88,12 +97,12 @@ namespace MergeSort
                 }
 
                 return A;
-
             }
             /*
             implement MergeSort method: takes an integer array by reference
             and makes some recursive calls to intself and then sorts the array
             */
+            // For single threads
             static int[] MergeSort(int[] A)
             {
                 int lengthA = A.Length;
@@ -114,11 +123,85 @@ namespace MergeSort
                 {
                     RA[i - mid] = A[i];
                 }
-                MergeSort(LA);
-                MergeSort(RA);
-                Merge(LA, RA, A);
+                Merge(MergeSort(LA), MergeSort(RA), A);
 
                 return A;
+            }
+            // MergeSort method for multithreading, the threads are created in this method
+            static int[] MergeSortMulti(int[] A)
+            {
+                int numberOfThreads = 12;
+                int lengthA = A.Length;
+                int portion = lengthA / numberOfThreads;
+                int leftOver = lengthA % numberOfThreads;
+                int[][] holderArray = new int[numberOfThreads][];
+                int k = 0;
+
+                if(leftOver == 0)
+                {
+                    for (int i = 0; i < numberOfThreads; i++)
+                    {
+                        int[] filler = new int[portion];
+                        for (int j = 0; j < portion; j++)
+                        {
+                            filler[j] = A[k];
+                            k++;
+                        }
+                        holderArray[i] = filler;
+                    }
+                }
+                else // this is for when the the length of the array is not divided evenly by the number of threads
+                {
+                    for (int i = 0; i < numberOfThreads - 1; i++)
+                    {
+                        int[] filler = new int[portion];
+                        for (int j = 0; j < portion; j++)
+                        {
+                            filler[j] = A[k];
+                            k++;
+                        }
+                        holderArray[i] = filler;
+                    }
+                    int[] specialFiller = new int[portion + leftOver];
+                    for (int j = 0; j < portion + leftOver; j++)
+                    {
+                        specialFiller[j] = A[k];
+                        k++;
+                    }
+                    holderArray[numberOfThreads - 1] = specialFiller;
+                }
+
+                List<Thread> threads = new List<Thread>();
+
+                //create and start threads
+                int q = 0;
+                while(q < numberOfThreads)
+                {
+                    int[] myArray = holderArray[q];
+                    Thread thread = new Thread(() => MergeSort(myArray));
+                    thread.Name = string.Format("Thread{0}", q + 1);
+                    thread.Start();
+                    threads.Add(thread);
+                    q++;
+                }
+
+                // Await threads
+                foreach (Thread thread in threads)
+                {
+                    thread.Join();
+                }
+
+                int[][] jaggedArray2 = new int[numberOfThreads][];
+                int length = portion * 2;
+
+                for (int j = 0; j < numberOfThreads - 1; j++)
+                {
+                    int[] test = new int[length];
+                    jaggedArray2[j] = Merge(holderArray[j], holderArray[j + 1], test);
+                    length = length + portion;
+                }
+
+                return holderArray[holderArray.Length - 1];
             }
             // a helper function to print your array
             static void PrintArray(int[] myArray)
@@ -127,13 +210,11 @@ namespace MergeSort
                 for (int i = 0; i < myArray.Length; i++)
                 {
                     Console.Write("{0} ", myArray[i]);
-
                 }
                 Console.Write("]");
                 Console.WriteLine();
 
             }
-
             // a helper function to confirm your array is sorted
             // returns boolean True if the array is sorted
             static bool IsSorted(int[] a)
@@ -144,10 +225,6 @@ namespace MergeSort
                 while (i <= j && ai <= (ai = a[i])) i++;
                 return i > j;
             }
-
-
         }
-
-
     }
 }
