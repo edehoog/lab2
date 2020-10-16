@@ -86,12 +86,17 @@ namespace pi
             Console.WriteLine(formatedTime);
 
             //--------------------Methods--------------------
-
+            /* 
+             * Takes the number of samples and hits by refernce and returns the estimation of pi
+             */
             static double EstimatePI(long numberOfSamples, ref long hits)
             {
                 double pi = (Convert.ToDouble(hits) / Convert.ToDouble(numberOfSamples)) * 4.0;
                 return pi;
             }
+            /* 
+             * Takes the number of samples and generates a double 2D array full of randomized samples
+             */
             static double[,] GenerateSamples(long numberOfSamples)
             {
                 double length = 1.0;
@@ -107,7 +112,10 @@ namespace pi
                 }
                 return sampling;
             }
-            // additional method to increment hits for the multithreading option
+            /*
+             Takes hits by reference, a 2D double array and the defined radius and increments hits if a sample
+             is inside the area of the circle. This method is for multi threading.
+             */
             static void isHit(ref long hits, double[,] samples, double radius)
             {
                 //numberOfSamples is the number of rows in samples
