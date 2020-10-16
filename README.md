@@ -17,7 +17,7 @@ Array size      Time (Multi-Threaded)       Time (Single)
 
 3. This speed up was not achieved in my programs. I beleive that the overhead time and memory required to set up the threads by kernel contribute to an overall slower execution than expected. Also there could be implementation errors in my code or inefficiencies I overlooked.
 
-# 4.
+4.
 ```
 Number of Threads       Sp
 1                       0.903
